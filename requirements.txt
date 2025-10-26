@@ -1,0 +1,11 @@
+mem0ai
+qdrant-client
+langchain
+langchain_community
+langchain_core
+langchain_google_genai
+google-genai
+fastapi
+uvicorn
+python-multipart
+langgraph
