@@ -54,7 +54,7 @@ async def add_interaction_memory(user_message: str, ai_response: str, user_id: s
     result = await asyncio.to_thread(
         memory.add, 
         messages, 
-        user_id=user_id
+        user_id=user_id,
     )
     return {"status": "success", "message": result}
 
@@ -64,7 +64,8 @@ async def search_memory(query: str, user_id: str) -> str:
     mems = await asyncio.to_thread(
         memory.search, 
         query, 
-        user_id=user_id
+        user_id=user_id,
+        limit=5
     )
     if mems.get("results"):
         context = "\n".join(f"- {m['memory']}" for m in mems["results"])

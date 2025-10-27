@@ -4,6 +4,8 @@ import logging
 from discord.ext import commands
 from dotenv import load_dotenv
 from memory.memory_client import *
+from prompts.rag_prompt import *
+from initializers.initialize_llm import *
 
 
 load_dotenv()
@@ -28,14 +30,28 @@ async def on_message(message):
     await bot.process_commands(message)
 
 @bot.command()
-async def add_context(ctx,*,context):
-    await ctx.send("`Processing recent messages...`")
+async def add_context(ctx): 
+    await ctx.send("`Fetching channel history... This may take a moment.`")
+    history_limit = 50
+    messages = []
+    async for msg in ctx.channel.history(limit=history_limit):
+        if (msg.author == bot.user or 
+            msg.id == ctx.message.id or 
+            msg.content.startswith(bot.command_prefix)):
+            continue
+        messages.append(f"{msg.author.name}: {msg.content}")
+    messages.reverse()
+    full_context = "\n".join(messages)
+
+    if not full_context:
+        await ctx.send("No recent messages found to add.")
+        return
     success = await add_single_memory(
-        context=context,
-        user_id=str("default")
+        context=full_context,
+        user_id=("testing") 
     )
     if success.get("status") == "success":
-        await ctx.send("✅ **Context Synced!**")
+        await ctx.send(f"✅ **Context Synced!**")
     else:
         await ctx.send("An error occurred while adding context.")
 
@@ -45,14 +61,17 @@ async def query(ctx,*,query):
     await ctx.send("`Searching the knowledge base..`")
     memories = await search_memory(
         query=query,
-        user_id=str("default")
+        user_id=str("testing")
     )    
     print("memories recieved ", memories)
     if len(memories) > 1900:
         output = f"Relevant memories:\n{memories[:1900]}\n... (truncated)"
     else:
         output = f"Relevant memories:\n{memories}"
-    await ctx.send(output)
+    prompt=rag_prompt(context=output,query=query)
+    llm=initialize_chat_llm()
+    response=llm.invoke(prompt)
+    await ctx.send(response.content)
 
 
 
@@ -80,10 +99,9 @@ Beyond just remembering, I will also help **automatically track tasks** , highli
 > Our system uses a strict **privacy-first design**. You have complete control over what data is shared , and all associated data is automatically deleted once a project is completed.
 
 ### 🛠️ Available Commands
-* `?help`: Displays this message.
 * `?query [your question]`: Ask a question to the team's knowledge base.
 * `?tasks`: See all tasks extracted from the conversations.
-* `?add`: add all the memories to the knowledge base.
+* `?add_context`: add all the memories to the knowledge base.
 
 """
     await ctx.send(help_message)
