@@ -4,8 +4,9 @@ import logging
 from discord.ext import commands
 from dotenv import load_dotenv
 from memory.memory_client import *
-from prompts.rag_prompt import *
-from initializers.initialize_llm import *
+from prompts.rag import *
+from prompts.add_conversation_memory import *
+from initializers.initialize_llm import *\
 
 
 load_dotenv()
@@ -20,8 +21,14 @@ bot = commands.Bot(command_prefix="?", intents=intents)
 
 @bot.event
 async def on_ready():
-    print("Booting up your system")
-    print(f"I am running on {bot.user.name}")
+    print()
+    print()
+    print("-------------------------")
+    print("| BOOTING UP THE SYSTEM |")
+    print(f"|   {bot.user.name}     |")
+    print("-------------------------")
+    print()
+    print()
 
 @bot.event
 async def on_message(message):
@@ -42,13 +49,14 @@ async def add_context(ctx):
         messages.append(f"{msg.author.name}: {msg.content}")
     messages.reverse()
     full_context = "\n".join(messages)
-
+    chat_listener_prompt=get_chat_listener_prompt()
     if not full_context:
         await ctx.send("No recent messages found to add.")
         return
     success = await add_single_memory(
         context=full_context,
-        user_id=("testing") 
+        user_id=("testing"),
+        prompt=chat_listener_prompt
     )
     if success.get("status") == "success":
         await ctx.send(f"✅ **Context Synced!**")
@@ -68,18 +76,18 @@ async def query(ctx,*,query):
         output = f"Relevant memories:\n{memories[:1900]}\n... (truncated)"
     else:
         output = f"Relevant memories:\n{memories}"
-    prompt=rag_prompt(context=output,query=query)
+    rag_prompt=get_rag_prompt(context=output,query=query)
     llm=initialize_chat_llm()
-    response=llm.invoke(prompt)
+    response=llm.invoke(rag_prompt)
     await ctx.send(response.content)
 
 
 
 @bot.command()
 async def introduce(ctx):
-    help_message = f"""🤖 **Welcome to ContextIQ!**
+    help_message = f"""🤖 **Welcome to Wisdom!**
 
-Hello {ctx.author.mention} ! I am **ContextIQ**, an AI-powered knowledge base built by **Team Code Geass**.
+Hello {ctx.author.mention} ! I am **Wisdom**, an AI-powered knowledge base built by **Team Code Geass**.
 
 I'm designed to work like a smart new teammate: one that **listens, remembers, and keeps your team on track**.
 

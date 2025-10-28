@@ -13,3 +13,9 @@ python-multipart
 langgraph
 discord.py
 logging
+python-pptx
+python-docx
+pytesseract
+Pillow
+PyMuPDF
+cohere
