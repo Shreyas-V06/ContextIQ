@@ -5,10 +5,12 @@ from langchain_core.messages import HumanMessage,SystemMessage
 from initializers.initialize_llm  import initialize_chat_llm
 from memory.memory_client import add_interaction_memory_sync,search_memory_sync
 from prompts.rag import get_rag_prompt
+from fastapi import APIRouter
 
-
+chatbot_router = APIRouter()
 memory = MemorySaver()
 
+@chatbot_router.get("/api/chat")
 def send_message(thread_id:str,user_message:str):
     config = {"configurable": {
     "thread_id": thread_id

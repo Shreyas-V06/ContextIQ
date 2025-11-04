@@ -47,7 +47,7 @@ async def add(ctx):
     print(processed_context_string)
     processed_contexts=processed_context_string.split("###END OF TOPIC###")
     for context in processed_contexts:
-         success = await add_single_memory(
+        success = await add_single_memory(
         context=context,
         user_id=("central-memories")
         )
