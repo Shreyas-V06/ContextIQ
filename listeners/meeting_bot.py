@@ -2,31 +2,18 @@ from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 import requests
 import json
+from dotenv import load_dotenv
 import os
 
-# ----------------- Setup -----------------
+load_dotenv()
+
 meeting_router = APIRouter()
 
-RECALL_API_KEY = "a6507dd4dae4dad2007925fe53ed96f925156349"
+RECALL_API_KEY = os.getenv("RECALL_API_KEY")
 RECALL_REGION = "us-west-2"
 BASE_URL = f"https://{RECALL_REGION}.recall.ai/api/v1"
 
-# If you have static files (like CSS, JS, etc.)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-# ----------------- Routes -----------------
-@meeting_router.get("/", response_class=JSONResponse)
-async def index(request: Request):
-    """Simple root endpoint. Returns JSON instead of an HTML page."""
-    return JSONResponse({
-        "message": "Recall bot API",
-        "endpoints": {
-            "create_bot": "/start-bot (POST form: meeting_url)",
-            "status_page": "/status/{bot_id} (GET)",
-            "get_results": "/get-results/{bot_id} (GET)",
-        },
-    })
 
 
 @meeting_router.post("/start-bot")
